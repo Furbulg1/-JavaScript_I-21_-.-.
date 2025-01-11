@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Маска введення дійсних чисел</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .input-field {
+            width: 200px;
+            padding: 8px;
+            font-size: 16px;
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #45a049;
+        }
+        .examples {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Введення дійсних чисел</h2>
+    
+    <input type="text" 
+           id="numberInput" 
+           class="input-field" 
+           placeholder="Введіть дійсне число">
+
+    <div class="examples">
+        <h3>Допустимі символи:</h3>
+        <ul>
+            <li>Цифри (0-9)</li>
+            <li>Знаки (+/-)</li>
+            <li>Крапка або кома (для дробових чисел)</li>
+            <li>Літера 'e' або 'E' (для експоненційного запису)</li>
+        </ul>
+    </div>
+
+    <script>
+        const input = document.getElementById('numberInput');
+        let lastValidValue = '';
+
+        function isValidNumberInput(value) {
+            // Якщо поле порожнє - це допустимо
+            if (value === '') {
+                return true;
+            }
+
+            // Замінюємо кому на крапку для валідації
+            const normalizedValue = value.replace(',', '.');
+            
+            // Перевіряємо, чи є введений текст частиною правильного числа
+            const numberRegex = /^[+-]?\d*\.?\d*(?:[eE][+-]?\d*)?$/;
+            
+            if (!numberRegex.test(normalizedValue)) {
+                return false;
+            }
+
+            // Перевіряємо особливі випадки
+            // Дозволяємо введення незавершених чисел, наприклад: "-", "1.", "1.e", "1e+" тощо
+            const incompleteNumberRegex = /^[+-]?\.?$|^[+-]?\d+\.?$|^[+-]?\d*\.\d+?$|^[+-]?\d+e[+-]?$/i;
+            if (incompleteNumberRegex.test(normalizedValue)) {
+                return true;
+            }
+
+            // Для завершених чисел перевіряємо, чи можна їх перетворити в число
+            const number = Number(normalizedValue);
+            return !Number.isNaN(number) && Number.isFinite(number);
+        }
+
+        input.addEventListener('beforeinput', function(e) {
+            // Отримуємо значення, яке буде після змін
+            const newValue = this.value.slice(0, e.target.selectionStart) + 
+                           (e.data || '') + 
+                           this.value.slice(e.target.selectionEnd);
+
+            // Якщо нове значення некоректне - скасовуємо введення
+            if (!isValidNumberInput(newValue)) {
+                e.preventDefault();
+            }
+        });
+
+        // Обробляємо вставку тексту
+        input.addEventListener('paste', function(e) {
+            const pastedText = e.clipboardData.getData('text');
+            if (!isValidNumberInput(pastedText)) {
+                e.preventDefault();
+            }
+        });
+
+        // Дозволяємо використовувати кому замість крапки
+        input.addEventListener('input', function() {
+            const value = this.value;
+            if (value && isValidNumberInput(value)) {
+                lastValidValue = value;
+            }
+        });
+    </script>
+</body>
+</html>
